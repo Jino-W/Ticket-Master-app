@@ -1,0 +1,120 @@
+import { Chart } from "react-google-charts";
+
+{/* <progress value={this.state.progressValue} max={this.state.tickets.length}></progress> */}
+                
+
+                {/* https://react-google-charts.com/pie-chart */}
+                <Chart
+                    width={'500px'}
+                    height={'300px'}
+                    chartType="PieChart"
+                    loader={<div>Loading Chart</div>}
+                    data={[
+                        ['Task', 'Ticket Priority'],
+                        ['High', this.state.highPie],
+                        ['Medium', this.state.mediumPie],
+                        ['Low', this.state.LowPie]
+                    ]}
+                    options={{
+                        title: 'Ticket Priority %',
+                    }}
+                    rootProps={{ 'data-testid': '1' }}
+                />
+
+
+                {/* <Chart
+                    width={'500px'}
+                    height={'300px'}
+                    chartType="Bar"
+                    loader={<div>Loading Chart</div>}
+                    data={[
+                        ['Year', 'Sales'],
+                        this.state.deptName.map((each,index)=>{
+                            return [each, this.state.deptOcc[index]]
+                        })
+                    ]}
+                    options={{
+                        // Material design options
+                        chart: {
+                        title: 'Ticket By Department',
+                        subtitle: '',
+                        },
+                    }}
+                    // For tests
+                    rootProps={{ 'data-testid': '2' }}
+                />
+
+             */}
+
+
+                <Chart
+                    width={'500px'}
+                    height={'300px'}
+                    chartType="Bar"
+                    loader={<div>Loading Chart</div>}
+                    data={{key:this.state.deptName, value:this.state.deptOcc}}
+                    options={{
+                        // Material design options
+                        chart: {
+                        title: 'Ticket By Department',
+                        subtitle: '',
+                        },
+                    }}
+                    // For tests
+                    rootProps={{ 'data-testid': '2' }}
+                />
+
+
+                statusChange=(ticket)=>{
+                    const data = {isResolved: !ticket.isResolved}
+                    axios.put(`http://dct-ticket-master.herokuapp.com/tickets/${ticket._id}`,data,{
+                        headers:{
+                            'x-auth': localStorage.getItem('authToken')
+                        }
+                    })
+                    .then(response=>{
+                        console.log(response.data)
+                        this.setState(prevState=>{
+                            //status tick
+                            const item = prevState.tickets.find(tick=>{
+                                return tick._id === response.data._id
+                            })
+                            item.isResolved = !item.isResolved
+            
+            
+                            //progress bar
+                            const items = prevState.tickets.filter(ticket=>{
+                                return ticket.isResolved
+                            })
+                            
+            
+                            //pie chart
+                            const item1 = prevState.tickets.filter(tick=>{
+                                return tick.priority ==="High"
+                            })
+            
+                            const item2 = prevState.tickets.filter(tick=>{
+                                return tick.priority ==="Medium"
+                            })
+            
+                            const item3 = prevState.tickets.filter(tick=>{
+                                return tick.priority ==="Low"
+                            })
+            
+                            // const deptName = []
+                            // const deptOcc = []
+                            const object = {}
+                            prevState.tickets.map((tick)=>{
+                                if(object.hasOwnProperty(tick.department.name)){
+                                    object[tick.department.name] = object[tick.department.name] + 1
+                                }else{
+                                    object[tick.department.name] = 1
+                                }
+                            })
+            
+                            console.log("obj",object)
+            
+            
+                            return {tickets: prevState.tickets, progressValue: items.length, highPie:item1.length, mediumPie:item2.length, LowPie:item3.length,}
+                        })
+                    })
