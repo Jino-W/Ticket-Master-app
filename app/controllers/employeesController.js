@@ -20,7 +20,7 @@ module.exports.create =(req,res)=>{
             res.json(employee)
         })
         .catch((err)=>{
-            res.json(err)
+            res.json({errors:err})
         })
 }
 
@@ -50,7 +50,7 @@ module.exports.show =(req,res)=>{
 module.exports.update = (req,res)=>{
     const id = req.params.id
     const body = req.body
-    Employee.findByIdAndUpdate(id, body, {new:true, runValidators : true})
+    Employee.findByIdAndUpdate(id, body, {new:true, runValidators : true}).populate('department', ['_id', "name"])
         .then((employee)=>{
             if(employee){
                 res.json(employee)
@@ -60,7 +60,7 @@ module.exports.update = (req,res)=>{
             }
         })
         .catch((err)=>{
-            res.json(err)
+            res.json({errors:err})
         })
 }
 

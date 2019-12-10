@@ -5,39 +5,37 @@ import Select from 'react-select';
 class TicketMasterForm extends React.Component{
     constructor(props){
         super(props)
-        console.log(props)
         this.state={
             isEdit : props.isEdit || false,
             code: props.ticket ? props.ticket.code : null,
-            selectValue: props.department || '',
+            selectValue: props.department ? props.department.name : '',
             customer: props.customer || "",
             priority: props.ticket ? props.ticket.priority : 'High',
             departments :  "",
             message: props.ticket ? props.ticket.message : '',
             title: props.ticket ? props.ticket.title : '',
             customers:  "",
-            selectedOption: props.customer ? {label: props.customer, value: props.customer} : null,
+            selectedOption: props.customer ? {label: props.customer.name, value: props.customer.name} : null,
             options: []
         }
-        console.log("constructor")
     }
 
     
 
     handleSelect=(selectedOption) => {
         this.setState({ selectedOption});
-        console.log(`Option selected:`, selectedOption);
     };
 
 
     handleChange=(e)=>{
-        this.setState({[e.target.name]: e.target.value})
+        if(e.target.value !== "-- select department --"){
+            this.setState({[e.target.name]: e.target.value})
+        }
     }
 
 
     handleSubmit=(e)=>{
         e.preventDefault()
-
         let result = "DCT-"
         const characters = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789abcdefghijklmnopqrstuvwxyz0123456789';
         const charactersLength = characters.length;
@@ -63,26 +61,24 @@ class TicketMasterForm extends React.Component{
             department: item._id,
             customer: item1._id
         }
-        console.log("formdata",formData)
         this.props.submitHandle(formData)
     }
 
 
-    handleReset=()=>{
+    handleReset=(e)=>{
+        e.preventDefault()
+        console.log('reset')
         this.setState({
             selectValue: '',
             priority: 'High',
             message:'',
             title:"",
-            customers:"",
-            departments:"",
             selectedOption: null,
         })
     }
 
     
     componentDidMount(){
-        console.log("comp")
         const headerData = {
             headers:{
                 'x-auth': localStorage.getItem('authToken')
@@ -95,71 +91,62 @@ class TicketMasterForm extends React.Component{
         const promise2 = axios.get(URL2, headerData);
 
         Promise.all([promise1, promise2]).then((values)=> {
-            console.log("values", values)
             const customers = values[0].data
             const departments= values[1].data
 
             this.setState({customers, departments})
         })
         .catch(err=>{
-            console.log(err)
+           alert(err)
         })
     }
 
     render(){
-        console.log("render")
         const options = []
-            console.log(options)
             if(this.state.customers){
-                console.log(this.state.departments, this.state.customers)
                 this.state.customers.map(customer=>{
                     options.push({"label":customer.name, "value":customer.name})
                 })
             }
         return (
             <div>{this.state.customers &&
-                <div>
-                    <h2>Fill the details</h2>
-                    <form>
-                        <div>
-                            <label>Name </label>
-                            <Select value={this.state.selectedOption} onChange={this.handleSelect} options={options} isSearchable={true}/>
+                <form>
+                    <div className = 'form-group'>
+                        <label>Name </label>
+                        <Select value={this.state.selectedOption} onChange={this.handleSelect} options={options} isSearchable={true}/>
+                    </div>
+                    <div className = 'form-group'>
+                        <label>Priority</label>
+                        <div className='form-check form-check-inline form-control'>
+                            <label><input className="ml-3 form-check-input" type="radio" name="priority" value="High" onChange={this.handleChange} checked={this.state.priority === "High"} />High &nbsp;</label>
+                            <label><input className="form-check-input" type="radio" name="priority" value="Medium" onChange={this.handleChange} checked={this.state.priority === "Medium"}  />Medium &nbsp;</label>
+                            <label><input className="form-check-input" type="radio" name="priority" value="Low" onChange={this.handleChange}  checked={this.state.priority === "Low"} />Low &nbsp;</label>
                         </div>
-                        <div>
-                            <label>Priority </label>
-                            <label><input type="radio" name="priority" value="High" onChange={this.handleChange} checked={this.state.priority === "High"} /> High</label>
-                            <label><input type="radio" name="priority" value="Medium" onChange={this.handleChange} checked={this.state.priority === "Medium"}  /> Medium</label>
-                            <label><input type="radio" name="priority" value="Low" onChange={this.handleChange}  checked={this.state.priority === "Low"} /> Low</label>
-                        </div>
-                        <div>
-                            <label>Title </label>
-                            <input type="text" name="title" value={this.state.title} onChange={this.handleChange}/>
-                        </div>
-                        <div>
-                            <label>Meassage </label>
-                            <textarea name="message" value={this.state.message} onChange={this.handleChange}></textarea>
-                        </div>
-                        <div>
-                            <label>Department </label>
-                            <select value={this.state.selectValue} name="selectValue" onChange={this.handleChange}>
-                                {this.state.departments.map(department=>{
-                                    return (
-                                        <option value = {department.name}>{department.name}</option>
-                                    )
-                                })}
-                            </select>
-                        </div>
-                        <div>
-                            <input name="submit" type="submit" onClick = {this.handleSubmit}/>
-                        </div>
-                        {this.state.isEdit &&
-                            <div>
-                                <input name="reset" type="reset" onClick = {this.handleReset}/>
-                            </div>
-                        }
-                    </form>
-                </div>
-                }
+                    </div>
+                    <div className = 'form-group'>
+                        <label>Title </label>
+                        <input className="form-control" type="text" name="title" value={this.state.title} onChange={this.handleChange}/>
+                    </div>
+                    <div className = 'form-group'>
+                        <label>Meassage </label>
+                        <textarea className="form-control" name="message" value={this.state.message} onChange={this.handleChange}></textarea>
+                    </div>
+                    <div className = 'form-group'>
+                        <label>Department </label>
+                        <select className="form-control" value={this.state.selectValue} name="selectValue" onChange={this.handleChange}>
+                            <option name="department" value="-- select department --">-- select department --</option>
+                            {this.state.departments.map(department=>{
+                                return (
+                                    <option key={department._id} value = {department.name}>{department.name}</option>
+                                )
+                            })}
+                        </select>
+                    </div>
+                    <div>
+                        <input className="btn btn-primary mr-2" name="submit" type="submit" onClick = {this.handleSubmit}/>
+                        {this.state.isEdit && <button className="btn btn-primary" name="reset" type="button" onClick = {this.handleReset}>reset</button>}
+                    </div>
+                </form>}
             </div>
             
         )

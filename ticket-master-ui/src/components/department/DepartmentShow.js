@@ -1,6 +1,8 @@
 import React from 'react'
-import axios from '../../config/axios'
-import {Link, Redirect} from 'react-router-dom'
+import {Link} from 'react-router-dom'
+import {startShowDepartment} from "../../actions/department"
+import {startEditDepartment, startDeleteDepartment} from "../../actions/departments"
+import {connect} from "react-redux"
 
 class List extends React.Component{
     constructor(props){
@@ -11,12 +13,7 @@ class List extends React.Component{
             employees: "",
             isEdit : false,
             name: "" ,
-            redirectToReferrer: false
         }
-    }
-
-    handleBack=()=>{
-        this.setState({redirectToReferrer:true})
     }
 
     handleChange=(e)=>{
@@ -26,44 +23,49 @@ class List extends React.Component{
     }
 
     handleDelete=(id)=>{
-        const confirm = this.state.tickets.length > 0 || this.state.employees.length > 0 ? window.confirm('This department have associated employees and tickets which will also be deleted. Do you want to proceed?') : window.confirm('Do you want to delete this department details?')
-        if(confirm){
-            axios.delete(`/departments/${id}`,{
-                headers:{
-                    'x-auth': localStorage.getItem('authToken')
-                }
-            })
-                .then(response=>{
-                    alert(response.data)
-                    // this.props.history.push('/departments')
-                    window.location.reload()
-                    //this.componentDidMount()
-                    // this.setState((prevState)=>{
-                    //     const newState = prevState.departments.filter(department=>department._id !== response.data._id)
-                    //     console.log(newState)
-                    //     return {departments: newState}
-                    // })
-                })
-                .catch(err=>{
-                    console.log(err)
-                })
-        } 
+        this.props.dispatch(startDeleteDepartment(id, this.props))
+
+        // const confirm = this.state.tickets.length > 0 || this.state.employees.length > 0 ? window.confirm('This department have associated employees and tickets which will also be deleted. Do you want to proceed?') : window.confirm('Do you want to delete this department details?')
+        // if(confirm){
+        //     axios.delete(`/departments/${id}`,{
+        //         headers:{
+        //             'x-auth': localStorage.getItem('authToken')
+        //         }
+        //     })
+        //         .then(response=>{
+        //             alert(response.data)
+        //             // this.props.history.push('/departments')
+        //             window.location.reload()
+        //             //this.componentDidMount()
+        //             // this.setState((prevState)=>{
+        //             //     const newState = prevState.departments.filter(department=>department._id !== response.data._id)
+        //             //     return {departments: newState}
+        //             // })
+        //         })
+        //         .catch(err=>{
+        //             alert(err)
+        //         })
+        // } 
     }
 
     submitHandle=()=>{
-        const id = this.props.match.params.id        
-        axios.put(`/departments/${id}`, {name: this.state.name}, {
-            headers:{
-                "x-auth": localStorage.getItem('authToken')
-            }
+        const id = this.props.match.params.id 
+        this.props.dispatch(startEditDepartment(id, {name: this.state.name}, this.props))
+        this.setState(prevState=>{
+            return {isEdit:!prevState.isEdit}
         })
-        .then(response=>{
-            console.log(response.data)
-            this.setState({isEdit:false, department:response.data.department})
-        })
-        .catch(err=>{
-            alert(err)
-        })
+
+        // axios.put(`/departments/${id}`, {name: this.state.name}, {
+        //     headers:{
+        //         "x-auth": localStorage.getItem('authToken')
+        //     }
+        // })
+        // .then(response=>{
+        //     this.setState({isEdit:false, department:response.data.department})
+        // })
+        // .catch(err=>{
+        //     alert(err)
+        // })
     }
 
     editHandle=()=>{
@@ -75,54 +77,70 @@ class List extends React.Component{
 
     componentDidMount(){
         const id = this.props.match.params.id
-        axios.get(`/departments/${id}` ,{
-            headers:{
-                'x-auth': localStorage.getItem('authToken')
-            }
-        })
-            .then(response=>{
-                console.log("response", response.data)
-                const department = response.data.department
-                const tickets = response.data.tickets
-                const employees = response.data.employees
-                this.setState({department,tickets,employees, name:department.name})
-            })
-            .catch(err=>{
-                console.log(err)
-                
-            })
+        this.props.dispatch(startShowDepartment(id))
+
+        // axios.get(`/departments/${id}` ,{
+        //     headers:{
+        //         'x-auth': localStorage.getItem('authToken')
+        //     }
+        // })
+        //     .then(response=>{
+        //         const department = response.data.department
+        //         const tickets = response.data.tickets
+        //         const employees = response.data.employees
+        //         this.setState({department,tickets,employees, name:department.name})
+        //     })
+        //     .catch(err=>{
+        //         alert(err)
+        //     })
+    }
+
+    
+
+    componentDidUpdate(prevProps){
+        if(prevProps.department.name!==this.props.department.name){
+            this.setState({isEdit:false})
+        }
     }
 
     
     render(){
-        console.log("department",this.state.department)
         return(
-            <div>
-                <h2>Department</h2>
-                {this.state.isEdit ?
-                    (<div>
-                        <input type= "text" name="name" value={this.state.name} placeholder="Enter category name" onChange={this.handleChange} />&nbsp;
-                        <button onClick={this.submitHandle} >click ok!</button>
-                    </div>):(
-                    <p><strong>Name: </strong>{this.state.name}</p>)
-                }
-                
-                <p><strong>Employees: </strong> {this.state.employees.length > 0  ? <span>{this.state.employees.map(employee=>{return <li key={employee._id}>{employee.name}</li>})}</span> : "--"}</p>
-
-                <p><strong>Tickets: </strong> {this.state.tickets.length > 0  ? <span>{this.state.tickets.map(ticket=>{return <li key={ticket._id}>{ticket.title} - {ticket.message}</li>})}</span> : "--"}</p>
-                
-                <Link to='/departments' onClick={()=>{this.handleDelete(this.state.department._id)}}>Delete</Link> |
-                {this.state.isEdit ? <Link to='#' onClick={this.editHandle}>Cancel</Link> : <Link to='#' onClick={this.editHandle}>Edit</Link>}
-
-                <br/><br/>
-                
-                <button onClick = {this.handleBack}>Back</button>
-                {this.state.redirectToReferrer && <Redirect to="/departments" />}
-
-                <br/><br/>
-            </div>
+            <>{this.props.department &&
+                <div className='showDiv'>
+                    {this.state.isEdit && <Link className='float-right' to={`/departments/${this.props.match.params.id}`} onClick={()=>{this.setState({isEdit: false})}}><i style={{color:'#007bff'}} className="fas fa-arrow-circle-left fa-lg"></i></Link>}
+                    <h2 className='text-center font-weight-bold'>Department Information</h2>
+                    {this.state.isEdit ?
+                        (<div>
+                            <input type= "text" className="form-control" name="name" value={this.state.name || this.props.department.name} placeholder="Enter category name" onChange={this.handleChange} />&nbsp;
+                            <button className="btn btn-primary mt-2" onClick={this.submitHandle} >click ok!</button>
+                        </div>):(<div>
+                            <ul className='list-group list-group-flush'>
+                                <li className='list-group-item'><span className='listHeading'>Id:</span> <span className='listContent'>{this.props.department._id}</span></li>
+                                <li className='list-group-item'><span className='listHeading'>Name:</span> <span className='listContent'>{this.props.department.name}</span></li>
+                            </ul>
+                            <div className="btn-group btn-group-sm m-3 float-right" role="group">
+                                <button type="button" className="btn btn-secondary">
+                                    <Link style={{textDecoration:'none',color:'white'}} to={`/departments`} onClick={()=>{this.handleDelete(this.props.department._id)}}>Delete</Link>
+                                </button>
+                                <button type="button" className="btn btn-secondary">
+                                    {this.state.isEdit ? <Link style={{textDecoration:'none',color:'white'}} to='#' onClick={this.editHandle}>Cancel</Link> : <Link style={{textDecoration:'none',color:'white'}} to='#' onClick={this.editHandle}>Edit</Link>}
+                                </button>
+                                <button type="button" className="btn btn-secondary"><Link style={{textDecoration:'none',color:'white'}} to={`/departments`} >Back</Link></button>
+                            </div>
+                        </div>)}
+                </div>
+            }</>
         )
     }
 }
 
-export default List
+
+
+const mapStateToProps=(state, props)=>{
+    return {
+        department: state.departments.find(department=> department._id == props.match.params.id) || state.department
+    }
+}
+
+export default connect(mapStateToProps)(List)

@@ -38,13 +38,13 @@ const userSchema = new Schema({
             }
         }
     },
-    dob: {
-        type: String,  // "dob": "1995/11/08"
-        validate: [function (dob) {
-            // console.log(moment(dob, "YYYYMMDD").fromNow().split(' ')[0])  //24
-            return moment(dob, "YYYYMMDD").fromNow().split(' ')[0] > 21
-        }, 'age should be above 21']
-    },
+    // dob: {
+    //     type: String,  // "dob": "1995/11/08"
+    //     validate: [function (dob) {
+    //         // console.log(moment(dob, "YYYYMMDD").fromNow().split(' ')[0])  //24
+    //         return moment(dob, "YYYYMMDD").fromNow().split(' ')[0] > 21
+    //     }, 'age should be above 21']
+    // },
     password:{
         type: String,
         required: true,
@@ -57,14 +57,14 @@ const userSchema = new Schema({
     //     minlength: 5,
     //     maxlength: 150,
     // },
-    terms_conditions:{
-        type: Boolean,
-        require: true,
-        default: false,
-        validate: [function (terms_conditions) {
-            return (terms_conditions === true || terms_conditions === 'true')
-        }, 'terms_conditions must be true!']
-    },
+    // terms_conditions:{
+    //     type: Boolean,
+    //     require: true,
+    //     default: false,
+    //     validate: [function (terms_conditions) {
+    //         return (terms_conditions === true || terms_conditions === 'true')
+    //     }, 'terms_conditions must be true!']
+    // },
     tokens:[
         {
             token:{
@@ -116,7 +116,7 @@ userSchema.methods.generateToken = function(){
             return Promise.resolve(token)
         })
         .catch(err=>{
-            return Promise.reject(err)
+            return Promise.reject({errors:err})
         })
 }
 
@@ -139,8 +139,6 @@ userSchema.methods.generateToken = function(){
 //static methods   (login)
 userSchema.statics.findByCredentials = function(body){
     const User = this
-    console.log("body",body)
-    // return User.findOne({email})
     return User.findOne({ '$or':[{email: body.email},{username: body.username},{mobile: body.mobile}] })
         .then(user=>{
             if(user){
@@ -149,7 +147,7 @@ userSchema.statics.findByCredentials = function(body){
                         if(result){
                             return Promise.resolve(user)
                         }else{
-                            return Promise.reject('Incorrect password')
+                            return Promise.reject({errors: 'Invalid email/password'})
                         }
                     })
                     .catch(err=>{
@@ -159,7 +157,7 @@ userSchema.statics.findByCredentials = function(body){
                 // return result
                 
             }else{
-                return Promise.reject('Incorrect email')
+                return Promise.reject({errors:'Incorrect email'})
             }
         })
         .catch(err=>{
@@ -182,7 +180,7 @@ userSchema.statics.findByToken = function(token){
     try{
         tokenData = jwt.verify(token, 'jwt@123') 
     }catch(err){
-        return Promise.reject(err)
+        return Promise.reject({errprs:err})
     }
     return User.findOne({ _id: tokenData._id, 'tokens.token': token})
 }

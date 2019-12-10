@@ -1,8 +1,8 @@
 import React from 'react';
-import {BrowserRouter, Route, Link, Switch} from 'react-router-dom';
-import axios from './config/axios'
-//import './App.css';
-import HomePage from './components/common/HomePage'
+import {BrowserRouter, Redirect, Route, Switch} from 'react-router-dom';
+import './App.css';
+
+import PrivateRoute from './components/common/PrivateRoute'
 
 import Register from "./components/users/Register"
 import Login from "./components/users/Login"
@@ -24,29 +24,14 @@ import TicketList from './components/tickets/TicketList'
 import TicketInfo from './components/tickets/TicketInfo'
 import EditTicket from './components/tickets/EditTicket'
 import NewTicket from './components/tickets/NewTicket'
+import NavBar from './components/common/Navbar';
 
 
 function App() {
-  function handleLogout(){
-    axios.delete('/users/logout', {
-        headers:{
-            "x-auth" : localStorage.getItem("authToken")
-        }
-    })
-    .then(response=>{
-        console.log(response.data)
-        localStorage.removeItem("authToken")
-        window.location.reload()
-        window.location.href = "/"   
-    })
-    .catch(err=>{
-        alert(err)
-    })
-  }
   return (
     <BrowserRouter>
       <div>
-        <h2>Contact Manager Application</h2>
+        {/* <h2>Contact Manager Application</h2>
         <li><Link to ="/">Home</Link></li> | 
         {localStorage.getItem('authToken') ? 
           (<div>
@@ -60,31 +45,38 @@ function App() {
             <li><Link to='/users/register'>Register</Link></li>
             <li><Link to='/users/login'>Login</Link></li>
           </div>)
-        }
+        } */}
+        <NavBar />
 
         <Switch>
-          <Route exact path = "/" component ={HomePage} />
+          <Route exact path = "/" render ={()=>{
+            if(localStorage.getItem('authToken')){
+              return <Redirect to='/tickets'/>
+            }else{
+              return <Redirect to ='/users/login'/>
+            }
+          }} />
 
           <Route exact path='/users/register' component={Register} />
           <Route exact path='/users/login' component={Login} />
 
-          <Route path = "/customers" component ={CustomersList}   exact={true}/>
-          <Route path = "/customers/new" component ={NewCustomer} />
-          <Route path = "/customers/1/:id" component = {EditCustomer} exact={true} />
-          <Route path = "/customers/:id" component ={CustomerInfo} exact={true} />
+          <PrivateRoute path = "/tickets" component ={TicketList} exact={true} />
+          <PrivateRoute path = "/tickets/new" component ={NewTicket} />
+          <PrivateRoute path = "/tickets/1/:id" component = {EditTicket} />
+          <PrivateRoute path = "/tickets/:id" component ={TicketInfo} exact={true}/>
+
+          <PrivateRoute path = "/customers" component ={CustomersList}   exact={true}/>
+          <PrivateRoute path = "/customers/new" component ={NewCustomer} />
+          <PrivateRoute path = "/customers/1/:id" component = {EditCustomer} exact={true} />
+          <PrivateRoute path = "/customers/:id" component ={CustomerInfo} exact={true} />
           
-          <Route exact path = "/departments" component ={DepartmentList} />
-          <Route path = "/departments/:id" component ={DepartmentShow} />          
+          <PrivateRoute exact path = "/departments" component ={DepartmentList} />
+          <PrivateRoute exact path = "/departments/:id" component ={DepartmentShow} />          
 
-          <Route path = "/employees" component ={EmployeesList} exact={true}/>
-          <Route path = "/employees/new" component ={NewEmployee} />
-          <Route path = "/employees/1/:id" component = {EditEmployee} />
-          <Route path = "/employees/:id" component ={EmployeeInfo} exact={true}/>
-
-          <Route path = "/tickets" component ={TicketList} exact={true} />
-          <Route path = "/tickets/new" component ={NewTicket} />
-          <Route path = "/tickets/1/:id" component = {EditTicket} />
-          <Route path = "/tickets/:id" component ={TicketInfo} exact={true}/>
+          <PrivateRoute path = "/employees" component ={EmployeesList} exact={true}/>
+          <PrivateRoute path = "/employees/new" component ={NewEmployee} />
+          <PrivateRoute path = "/employees/1/:id" component = {EditEmployee} />
+          <PrivateRoute path = "/employees/:id" component ={EmployeeInfo} exact={true}/>
 
         </Switch>
         

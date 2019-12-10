@@ -20,7 +20,7 @@ module.exports.create =(req,res)=>{
             res.json(department)
         })
         .catch((err)=>{
-            res.json(err)
+            res.json({errors:err})
         })
 }
 

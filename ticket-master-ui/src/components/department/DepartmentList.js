@@ -1,106 +1,100 @@
 import React from "react"
-import axios from '../../config/axios'
 import {Link} from 'react-router-dom'
+import {connect} from "react-redux"
+import {startGetDepartments, startCreateDepartment} from "../../actions/departments"
 
 class EmployeesList extends React.Component{
     constructor(){
         super()
         this.state ={
-            departments : [],
             department: {"name" : ""}
         }
-        console.log("constructor")
     }
 
     handleChange=(e)=>{
         const value = e.target.value
         this.setState(prevState=>{
             prevState.department.name = value
-            return {department:prevState.department}
+            return {department: prevState.department}
         })
     }
 
-    handleSubmit=(e)=>{
-        this.setState(prevState=>{
-            const formData = prevState.department
-            axios.post(`/departments`,formData,{
-                headers:{
-                    'x-auth': localStorage.getItem('authToken')
-                }
-            })
-            .then(response=>{
-                console.log(response.data)
-                //this.componentDidMount()   -> use concat method
+    handleSubmit=(formData)=>{
+        this.props.dispatch(startCreateDepartment(this.state.department, this.props))
+        this.setState({"name" : ""})
 
-                this.setState(prevState=>{
-                    prevState.departments.push(response.data)
-                    return {departments:prevState.departments,department:{"name" : ""}}
-                })
-            })
-            .catch(err=>{
-                console.log(err)
-            })
-        }) 
+        // this.setState(prevState=>{
+        //     const formData = prevState.department
+        //     axios.post(`/departments`,formData,{
+        //         headers:{
+        //             'x-auth': localStorage.getItem('authToken')
+        //         }
+        //     })
+        //     .then(response=>{
+        //         this.setState(prevState=>{
+        //             prevState.departments.push(response.data)
+        //             return {departments:prevState.departments,department:{"name" : ""}}
+        //         })
+        //     })
+        //     .catch(err=>{
+        //         alert(err)
+        //     })
+        // }) 
     }
 
     componentDidMount(){
-        console.log("componentDidMount")
-        console.log("authToken",localStorage.getItem('authToken'))
-        axios.get("/departments",{
-            headers:{
-                'x-auth': localStorage.getItem('authToken')
-            }
-        })
-        .then(response=>{
-            console.log("response",response.data)
-            const departments = response.data
-            this.setState({departments})
-        })
-        .catch(err=>{
-            console.log(err)
-            
-        })
+        this.props.dispatch(startGetDepartments())
     }
 
 
-
     render(){
-        console.log("render")
         return(
-            <div>
-                {this.state.departments && 
+            <div className="row">
+            <div className="container">
+                {this.props.departments && 
                 <div>
-                    <h2>Listing Departments {this.state.departments.length}</h2>
-                    <table border='1px' cellPadding="7px">
-                        <thead>
-                            <tr>
-                                <th>Id</th>
-                                <th>Name</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
+                    <div className="row mt-5">
+                        <h2 className="col-md-7 mr-5">Listing Departments {this.props.departments.length}</h2>
+                        <div className="col-md-4 btn-group btn-sm justify-content-end" >
+                            <input className="col-md-9 form-control mr-2" placeholder="Add Department" type ="text" value={this.state.department.name} onChange={this.handleChange}/>
+                            <button className="col-md-3 btn btn-primary btn-sm" ><a onClick={this.handleSubmit} style={{color:"white", textDecoration:"none"}} href="# " >Add +</a></button>
+                        </div>
+                    </div>
+                    <div className="row">
+                        <table className="table">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
 
-                        <tbody>
-                            {
-                                this.state.departments.map(department=>{
-                                    return(
-                                        <tr key={department._id}>
-                                            <td>{department._id}</td>
-                                            <td>{department.name}</td>
-                                            <td><Link to={{pathname:`departments/${department._id}`}}>Show</Link></td>
-                                        </tr>
-                                    )
-                                })
-                            }
-                        </tbody>
-                    </table>
-
-                    <input type ="text" value={this.state.department.name} onChange={this.handleChange}/>
-                    <button onClick={this.handleSubmit}>Submit</button>
+                            <tbody>
+                                {
+                                    this.props.departments.map(department=>{
+                                        return(
+                                            <tr key={department._id}>
+                                                <td>{department.name}</td>
+                                                <td><Link to={{pathname:`departments/${department._id}`}}>Show</Link></td>
+                                            </tr>
+                                        )
+                                    })
+                                }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>}
+            </div>
             </div>
         )
     }
 }
 
-export default EmployeesList
+
+const mapStateToProps=(state)=>{
+    return {
+        departments: state.departments
+    }
+}
+
+export default connect(mapStateToProps)(EmployeesList)

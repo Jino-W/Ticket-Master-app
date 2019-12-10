@@ -1,3 +1,7 @@
+body{
+  background-color: whitesmoke;
+}
+
 .App {
   text-align: center;
 }
@@ -19,4 +23,39 @@
 
 .App-link {
   color: #09d3ac;
+}
+
+.showDiv{
+  position:absolute;
+  width:40vw;
+  border:solid 2px black;
+  border-radius: 15px;
+  padding:25px;
+  top: 50%;
+  left:50%;
+  -ms-transform: translate(-50%, -50%);
+  transform: translate(-50%, -50%);
+}
+
+.showDiv>h2{
+  padding:15px;
+}
+
+.showDiv>ul>li{
+  display:flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.listHeading{
+  font-weight: bold;
+  display:inline-block;
+  min-width: 40%;
+  margin-left: 40px;;
+  font-size: medium;
+}
+
+.listContent{
+  margin-left: 20px;
+  display:inline-block;
 }

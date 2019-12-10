@@ -55,7 +55,7 @@ module.exports.show =(req,res)=>{
 module.exports.update = (req,res)=>{
     const id = req.params.id
     const body = req.body
-    Ticket.findByIdAndUpdate(id, body, {new:true, runValidators : true})
+    Ticket.findByIdAndUpdate(id, body, {new:true, runValidators : true}).populate('department', ['_id', "name"]).populate('customer', ['_id', "name"])
         .then((ticket)=>{
             if(ticket){
                 res.json(ticket)

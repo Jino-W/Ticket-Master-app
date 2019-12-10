@@ -1,26 +1,26 @@
 const User = require('../models/user')
 // const request = require('request')
-const network = require('network')
+// const network = require('network')
 const _ = require('lodash')
 
 //register
 module.exports.create = (req, res)=>{
     const body = req.body
     console.log(body)
-    if(body.password == body.confirmPassword){
+    // if(body.password == body.confirmPassword){
         const user = new User(body)
         console.log(user)
         user.save()
             .then(user=>{
                 console.log(user)
-                res.json(_.pick(user, ["_id", "username", "email", "terms_conditions","dob","mobile"]))
+                res.json(_.pick(user, ["_id", "username", "email", "mobile"]))
             })
             .catch(err=>{
-                res.json(err)
+                res.json({errors:err})
             })
-    }else{
-        res.json('passwords doesn\'t match')
-    }
+    // }else{
+        // res.json('passwords doesn\'t match')
+    // }
 }
 
 
@@ -40,7 +40,7 @@ module.exports.login = (req, res)=>{
                         res.json({token})
                     })
                     .catch(err=>{
-                        res.json(err)
+                        res.status(401).json(err)
                     })
             }else{
                 res.json('active sessions limit exceeded')

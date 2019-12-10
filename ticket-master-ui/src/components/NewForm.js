@@ -17,7 +17,9 @@ class NewForm extends React.Component{
     }
 
     handleChange=(e)=>{
-        this.setState({[e.target.name]: e.target.value})
+        if(e.target.value !== "-- select department --"){
+            this.setState({[e.target.name]: e.target.value})
+        }
     }
 
     handleSubmit=(e)=>{
@@ -58,24 +60,24 @@ class NewForm extends React.Component{
     render(){
         return (
             <div>
-                <h2>Fill the details</h2>
                 <form>
-                    <div>
+                    <div className = 'form-group'>
                         <label>Name </label>
-                        <input name="name" value={this.state.name} type="text" onChange={this.handleChange} />
+                        <input name="name" className="form-control" value={this.state.name} type="text" onChange={this.handleChange} />
                     </div>
-                    <div>
+                    <div className = 'form-group'>
                         <label>Email </label>
-                        <input name="email" value={this.state.email} type="email" onChange={this.handleChange} />
+                        <input name="email" className="form-control" value={this.state.email} type="email" onChange={this.handleChange} />
                     </div>
-                    <div>
+                    <div className = 'form-group'>
                         <label>Mobile </label>
-                        <input name="mobile" value={this.state.mobile} type="text" onChange={this.handleChange} />
+                        <input name="mobile" className="form-control" value={this.state.mobile} type="text" onChange={this.handleChange} />
                     </div>
                     {this.state.isEmployee && 
-                        <div>
+                        <div className = 'form-group'>
                             <label>Department </label>
-                            <select value={this.state.selectValue} name="selectValue" onChange={this.handleChange}>
+                            <select className="form-control" value={this.state.selectValue} name="selectValue" onChange={this.handleChange}>
+                                <option name="department" value="-- select department --">-- select department --</option>
                                 {this.state.departments.map(department=>{
                                     return (
                                         <option key={department._id} name="department" value = {department.name}>{department.name}</option>
@@ -85,7 +87,7 @@ class NewForm extends React.Component{
                         </div>
                     }
                     <div>
-                        <input name="submit" type="submit" onClick = {this.handleSubmit}/>
+                        <input name="submit" className="btn btn-primary" type="submit" onClick = {this.handleSubmit}/>
                     </div>
                 </form>
             </div>

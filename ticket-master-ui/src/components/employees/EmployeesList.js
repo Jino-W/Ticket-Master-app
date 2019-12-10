@@ -1,6 +1,7 @@
 import React from "react"
-import axios from '../../config/axios'
 import {Link} from 'react-router-dom'
+import {connect} from "react-redux"
+import {startGetEmployees} from "../../actions/employees"
 
 class EmployeesList extends React.Component{
     constructor(){
@@ -11,31 +12,22 @@ class EmployeesList extends React.Component{
     }
 
     componentDidMount(){
-        console.log("getting-comp")
-        axios.get("/employees",{
-            headers:{
-                'x-auth': localStorage.getItem('authToken')
-            }
-        })
-        .then(response=>{
-            console.log("get",response.data)
-            const employees = response.data
-            this.setState({employees})
-        })
-        .catch(err=>{
-            console.log("err",err)
-        })
+        this.props.dispatch(startGetEmployees())
     }
 
     render(){
-        console.log(this.state.employees)
         return(
-            <div>
-                <h2>Listing Employees {this.state.employees.length}</h2>
-                <table border='1px' cellPadding="7px">
+            <div className="row">
+            <div className="container">
+                <div className="row mt-5">
+                    <h2 className="ml-4">Listing Employees {this.props.employees.length}</h2>
+                    <div className="btn-group btn-sm float-left" >
+                        <button className="btn btn-primary" ><a style={{color:"white", textDecoration:"none"}} href="/employees/new" >Add +</a></button>
+                    </div>
+                </div>
+                <table className="table mt-2">
                     <thead>
                         <tr>
-                            <th>Id</th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Mobile</th>
@@ -46,10 +38,9 @@ class EmployeesList extends React.Component{
 
                     <tbody>
                         {
-                            this.state.employees.map(employee=>{
+                            this.props.employees.map(employee=>{
                                 return(
                                     <tr key={employee._id}>
-                                        <td>{employee._id}</td>
                                         <td>{employee.name}</td>
                                         <td>{employee.email}</td>
                                         <td>{employee.mobile}</td>
@@ -64,10 +55,16 @@ class EmployeesList extends React.Component{
                     </tbody>
                 </table>
 
-                <button><Link to="/employees/new">Add Employee</Link></button>
+            </div>
             </div>
         )
     }
 }
 
-export default EmployeesList
+const mapStateToProps=(state)=>{
+    return {
+        employees: state.employees
+    }
+}
+
+export default connect(mapStateToProps)(EmployeesList)

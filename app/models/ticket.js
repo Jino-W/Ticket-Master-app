@@ -36,8 +36,7 @@ const ticketSchema = new Schema({
     },
     isResolved:{
         type:Boolean,
-        default:false,
-        required:true
+        default:false
     },
     code:{
         type:String,
